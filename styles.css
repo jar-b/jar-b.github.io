@@ -1,0 +1,60 @@
+/* General setup */
+
+html {
+    font-size: 10px;
+    margin: 0;
+    font-family: 'Inter', sans-serif;
+
+    /* Palette light to dark */
+    /* https://coolors.co/palette/0d1321-1d2d44-3e5c76-748cab-f0ebd8 */
+    /* #f0ebd8 */
+    /* #748cab */
+    /* #3e5c76 */
+    /* #1d2d44 */
+    /* #0d1321 */
+
+    background-color: #0d1321;
+    color: white;
+}
+
+body {
+    width: 80%;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+img.profile {
+    width: 30%;
+    border-radius: 15%;
+}
+
+.social {
+    padding: 0 0 2rem 0;
+}
+
+/* Typography */
+
+h1 {
+    font-size: 4rem;
+}
+
+h2 {
+    font-size: 3rem;
+}
+
+h3,
+h4,
+h5 {
+    font-size: 2rem;
+}
+
+a {
+    color: #748cab;
+}
+
+p {
+    font-size: 1.4rem;
+    line-height: 1.6;
+    word-spacing: 0.2rem;
+    letter-spacing: 0.1rem;
+}
