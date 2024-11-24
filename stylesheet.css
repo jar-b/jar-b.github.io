@@ -32,22 +32,6 @@ img.profile {
     padding: 0 0 2rem 0;
 }
 
-/* Layout */
-
-section {
-  float: left;
-  width: 80%;
-}
-
-nav {
-  float: left;
-  width: 20%;
-}
-
-section, nav, {
-  padding: 20px;
-}
-
 /* Typography */
 
 h1 {
@@ -73,9 +57,4 @@ p {
     line-height: 1.6;
     word-spacing: 0.2rem;
     letter-spacing: 0.1rem;
-}
-
-nav {
-    float: left;
-
 }
