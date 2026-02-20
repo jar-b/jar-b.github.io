@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <title>Jared Baker</title>
+    <link href='https://fonts.googleapis.com/css?family=Raleway' rel='stylesheet' type='text/css'>
+    <link href="/static/stylesheet.css" rel="stylesheet" type="text/css">
+  </head>
+  <body>
+    <h2>Jared Baker</h2>
+
+    <div class="social">
+      <p>
+        <a href="/">Home</a> |
+        <a href="/posts">Posts</a> |
+        <a href="https://github.com/jar-b">Github</a> | 
+        <a href="https://linkedin.com/in/jared-baker-3ab40176">LinkedIn</a>
+      </p>
+    </div>
+
+    <h1 id="tag-policy-compliance">Tag Policy Compliance</h1>
+<p><strong>2026-02-20</strong></p>
+<hr>
+<p>In the lead up to AWS Re:Invent 2025, the Terraform AWS Provider added support for <a href="https://github.com/hashicorp/terraform-provider-aws/pull/45143">enforcing tag policy compliance</a>.
+The user-facing portion of this feature is covered in the <a href="https://registry.terraform.io/providers/hashicorp/aws/latest/docs/guides/tag-policy-compliance">provider documentation</a>, but there are some interesting internal implementation details worth describing further.</p>
+<ul>
+<li><a href="#mapping-resource-types">Mapping Resource Types</a></li>
+<li><a href="#retrieving-tag-policy-data">Retrieving Tag Policy Data</a></li>
+<li><a href="#validation-timing-and-plugin-libraries">Validation Timing</a></li>
+</ul>
+<h2 id="mapping-resource-types">Mapping Resource Types</h2>
+<p><a href="https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_policies_tag-policies.html">Tag policies</a> provide a mechanism for organizations to monitor and enforce tagging practices on any AWS resource which supports tags.
+To re-use an example from the provider documentation, this policy dictates all Log Groups should have the <code>Owner</code> tag.</p>
+<pre><code class="language-json">{
+  &quot;tags&quot;: {
+    &quot;Owner&quot;: {
+      &quot;tag_key&quot;: {
+        &quot;@@assign&quot;: &quot;Owner&quot;
+      },
+      &quot;report_required_tag_for&quot;: {
+        &quot;@@assign&quot;: [
+          &quot;logs:log-group&quot;
+        ]
+      }
+    }
+  }
+}
+</code></pre>
+<p>The <code>@@assign</code> array is where the resource type(s) are defined, in this case it contains only <code>logs:log-group</code>.
+This is a &quot;tag type&quot;, which is distinct from resource type names for CloudFormation or Terraform.</p>
+<p>This presents the first challenge with implementing provider support for tag compliance - translating a &quot;tag type&quot; to a &quot;Terraform type&quot; to ensure the policy intent still applies correctly.</p>
+<p>For the initial release we kept the solution simple and <a href="https://github.com/hashicorp/terraform-provider-aws/blob/v6.22.0/internal/tags/tagpolicy/lookup_gen.go#L7-L9">generated a <code>map</code></a> from <a href="https://github.com/hashicorp/terraform-provider-aws/blob/v6.22.0/internal/tags/tagpolicy/tagris-cfn-terraform-mapping.csv">a source CSV</a> correlating tag, CloudFormation, and Terraform resource types.
+A fast follow <a href="https://github.com/hashicorp/terraform-provider-aws/pull/45671">migrated the CSV to HCL</a>, and added support one-to-many type mappings.</p>
+<p>While this lacks a fully automated mechanism to account for new tag types<sup id="fnref:1"><a href="#fn:1" class="footnote-ref" role="doc-noteref">1</a></sup>, it provides a stable source of truth with very low maintenance burden in the short-to-medium term.</p>
+<h2 id="retrieving-tag-policy-data">Retrieving Tag Policy Data</h2>
+<p>With the capability for translating tag policies in place, another decision point was <em>when</em> to fetch tag policy data within the provider life cycle.
+Broadly, the two options considered were:</p>
+<ol>
+<li>Fetch required tags for all resources at startup.</li>
+<li>Fetch required tags for one resource type on-demand.</li>
+</ol>
+<p>Both options have trade-offs, but in this case we chose Option 1 to optimize for configurations with many resources.</p>
+<p>It is common for single Terraform configurations to have tens or hundreds of resources, most of which will support tags.
+By fetching and caching the tag policy data during provider initialization, we avoid introducing tens or hundreds of additional API calls to fetch required tagging data per each resource type.
+Reducing to a single API call also reduces the likelihood of failed requests or throttling errors in the middle of a <code>plan</code> operation.</p>
+<h2 id="validation-timing">Validation Timing</h2>
+<p>Perhaps the most technically interesting aspect of this feature is where the validation executes.</p>
+<p>Validation occurs during the <a href="https://developer.hashicorp.com/terraform/plugin/framework/internals/rpcs#planresourcechange-rpc"><code>PlanResourceChange</code> RPC</a>.
+For Plugin SDK V2 based resources, this is a <a href="https://developer.hashicorp.com/terraform/plugin/sdkv2/resources/customizing-differences"><code>CustomizeDiff</code> method</a>.
+For Plugin Framework based resources, this is a <a href="https://developer.hashicorp.com/terraform/plugin/framework/resources/plan-modification#resource-plan-modification"><code>ModifyPlan</code> method</a>.
+These methods can be defined individually per resource, but in the AWS provider we also have a concept of &quot;interceptors&quot;.</p>
+<p>Interceptors function as a middleware by wrapping resource definitions in a parent struct and applying generalized logic to <em>all</em> resources.
+The logic can run before or after the wrapped resource's, and extends CRUD operations as well as plan-stage operations like <code>CustomizeDiff</code>/<code>ModifyPlan</code>.
+This is how tagging and resource identity function without any boilerplate code in the resource file related to these operations.</p>
+<p>For tag policy compliance we added two new interceptors that append to existing <code>CustomizeDiff</code> / <code>ModifyPlan</code> functions for any resources which support tags.
+The code for each is found (<a href="https://github.com/hashicorp/terraform-provider-aws/blob/v6.22.1/internal/provider/sdkv2/tags_interceptor.go#L303-L364">here</a>) and (<a href="https://github.com/hashicorp/terraform-provider-aws/blob/v6.22.1/internal/provider/framework/tags_interceptor.go#L273-L335">here</a>). <sup id="fnref:2"><a href="#fn:2" class="footnote-ref" role="doc-noteref">2</a></sup></p>
+<p>Interceptors allowed us to write the validation logic once and apply it consistently to the hundreds of resources across the provider.</p>
+<div class="footnotes" role="doc-endnotes">
+<hr>
+<ol>
+<li id="fn:1">
+<p>Any automated solution would be predicated on the public availability of an API to list all supported tag resource types.&#160;<a href="#fnref:1" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:2">
+<p>These link to the interceptor logic as of <code>v6.22.1</code>.
+The initial release in <code>v6.22.0</code> contained a pair of significant regressions.
+See the <a href="https://github.com/hashicorp/terraform-provider-aws/pull/45201">patch PR</a> for a detailed write up on what was missed.&#160;<a href="#fnref:2" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+</ol>
+</div>
+
+
+  </body>
+</html>

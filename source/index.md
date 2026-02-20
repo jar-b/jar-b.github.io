@@ -6,3 +6,7 @@ I'm a software engineer currently working as a maintainer of the [Terraform AWS 
 - [awscost](https://github.com/jar-b/awscost) - Pretty print AWS costs over time.
 - [provdoc](https://github.com/jar-b/provdoc) - Terraform provider documentation in the terminal.
 - [terraform-provider-awsipranges](https://github.com/jar-b/terraform-provider-awsipranges) - Terraform provider for working with public AWS IP range data.
+
+### Writing
+
+- **2026-02-20** - [Tag Policy Compliance in the Terraform AWS Provider](/posts/tag-policy-compliance)
