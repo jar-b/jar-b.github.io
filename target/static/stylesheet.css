@@ -56,13 +56,12 @@ a {
     color: #748cab;
 }
 
-p {
+p,
+ul,
+ol,
+li {
     font-size: 1.4rem;
     line-height: 1.6;
     word-spacing: 0.2rem;
     letter-spacing: 0.1rem;
-}
-
-ul {
-    font-size: 1.4rem;
 }
