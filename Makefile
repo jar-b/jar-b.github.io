@@ -6,7 +6,7 @@ generate: clean ## Re-generate content
 
 .PHONY: clean
 clean: ## Clean up generated content
-	@rm -f target
+	@rm -fr target
 
 .PHONY: help
 help:
@@ -14,4 +14,4 @@ help:
 
 .PHONY: serve
 serve: ## Serve generated content
-	@cd target && python3 -m http.server
+	@gennit -serve
