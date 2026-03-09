@@ -2,11 +2,11 @@
 
 .PHONY: generate
 generate: clean ## Re-generate content
-	@gennit
+	@gennit -target docs
 
 .PHONY: clean
 clean: ## Clean up generated content
-	@rm -fr target
+	@rm -fr docs
 
 .PHONY: help
 help:
@@ -14,4 +14,4 @@ help:
 
 .PHONY: serve
 serve: ## Serve generated content
-	@gennit -serve
+	@gennit -target docs -serve
