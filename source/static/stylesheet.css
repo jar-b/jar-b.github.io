@@ -17,37 +17,28 @@ body {
     margin: 0 auto;
 }
 
-img[alt="profile"] {
-    width: 30%;
-    border-radius: 15%;
-}
-
-.social {
-    padding: 0 0 2rem 0;
-}
-
-.post-title {
-    font-size: 2rem;
-}
-
 /* Typography */
 
 h1 {
-    font-size: 4rem;
+    font-size: 3rem;
 }
 
 h2 {
-    font-size: 3rem;
+    font-size: 2rem;
 }
 
 h3,
 h4,
 h5 {
-    font-size: 2rem;
+    font-size: 1.5rem;
 }
 
 a {
     color: #d88;
+}
+
+p,ul,ol {
+    margin-bottom: 2.5rem;
 }
 
 p,
