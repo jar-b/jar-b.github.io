@@ -9,4 +9,5 @@ I'm a software engineer currently working as a maintainer of the [Terraform AWS 
 
 ### Writing
 
+- **2026-04-06** - [A Multi-Cursor Use Case with Helix](/posts/helix-multi-cursor)
 - **2026-02-20** - [Tag Policy Compliance in the Terraform AWS Provider](/posts/tag-policy-compliance)

@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <title>Jared Baker</title>
+
+    <!-- font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans&display=swap" rel="stylesheet">
+
+    <!-- syntax highlighting via highlight.js -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
+    <script>hljs.highlightAll();</script>
+
+    <link href="/static/stylesheet.css" rel="stylesheet" type="text/css">
+  </head>
+  <body>
+    <h2>Jared Baker</h2>
+
+    <div class="social">
+      <p>
+        <a href="/">Home</a> |
+        <a href="https://github.com/jar-b">Github</a> | 
+        <a href="https://linkedin.com/in/jared-baker-3ab40176">LinkedIn</a>
+      </p>
+    </div>
+
+    <h1 id="a-multi-cursor-use-case-with-helix">A Multi-Cursor Use Case with Helix</h1>
+<p><strong>2026-04-07</strong></p>
+<hr>
+<p>I recently tried out <a href="https://helix-editor.com/">Helix</a>.
+My highlights so far are:</p>
+<ul>
+<li><strong>Sensible defaults</strong> - My <code>config.toml</code> is 10 lines.</li>
+<li><strong>Built-ins</strong> - LSP, Treesitter, and modern themes with no setup.</li>
+<li><strong>Multi-cursor</strong></li>
+</ul>
+<p>While reviewing a pull request about a week in I came across a test suite where all of the existing acceptance tests had a setup like this:</p>
+<pre><code class="language-go">    CheckDestroy: resource.ComposeAggregateTestCheckFunc(
+        testAccCheckServerlessCacheDestroy(ctx, t),
+    ),
+</code></pre>
+<p>A great use case for Helix's multi-cursor feature.
+<code>resource.ComposeAggregateTestCheckFunc</code> is unnecessary here as only a single check is being performed and it can be passed to <code>CheckDestroy</code> directly.
+The diff I wanted across all test cases was.</p>
+<pre><code class="language-diff">-               CheckDestroy: resource.ComposeAggregateTestCheckFunc(
+-                       testAccCheckServerlessCacheDestroy(ctx, t),
+-               ),
++               CheckDestroy:             testAccCheckServerlessCacheDestroy(ctx, t),
+</code></pre>
+<p>With multi-cursor, this edit can be repeated in all 10+ places simultaneously.</p>
+<ul>
+<li><code>%s</code> - Enter <code>select</code> mode</li>
+<li><code>CheckDestroy&lt;CR&gt;</code> - Match all occurrences of <code>CheckDestroy</code>, initializing a cursor at each location</li>
+<li>Remove the unnecessary wrapper function</li>
+</ul>
+<p>The nice bit about the &quot;remove&quot; step is that you can navigate up, down or edit character by character and the same change applies at each cursor.
+It doesn't require a precise find/replace regular expression, just normal editing motions.</p>
+<p>With years of vim keybinding muscle memory I am keeping Neovim as my primary editor for now, but Helix will be sticking around for use cases like this one.</p>
+
+
+  </body>
+</html>
