@@ -5,22 +5,24 @@ html {
     margin: 0;
     font-family: "Open Sans", sans-serif;
 
-    /* Match highlight.js dark theme */
-    /* https://github.com/highlightjs/highlight.js/blob/11.11.1/src/styles/dark.css */
-    background-color: #303030;
-    color: #ddd;
+    /* Match highlight.js base16/helios theme */
+    /* https://github.com/highlightjs/highlight.js/blob/11.11.1/src/styles/base16/helios.css */
+    background: #1d2021;
+    background-color: #1d2021;
+    color: #d5d5d5;
 }
 
 body {
     width: 80%;
-    max-width: 800px;
+    max-width: 700px;
     margin: 0 auto;
 }
 
 a {
-    color: #d88;
+    /* color: #be4264; */
+    color: #1ba595;
 }
 
 p,ul,ol {
-    margin-bottom: 2rem;
+    margin-bottom: 2.5rem;
 }
